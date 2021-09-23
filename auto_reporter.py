@@ -93,13 +93,17 @@ class AutoReporter(object):
         manage_url = 'http://grad.shanghaitech.edu.cn/'
         auth_url = 'http://ids.shanghaitech.edu.cn/authserver/login?' \
                    'service=http://grad.shanghaitech.edu.cn/sso/'
-        show_url = 'https://grad.shanghaitech.edu.cn/GraduateCultivate/WitMis_FBLWManage.aspx?' \
-            'PC=AA7F0DCDDFB3894C&PCID=5725B7721D4680F3'
+        show_url = 'https://grad.shanghaitech.edu.cn/GraduateCultivate/WitMis_FBLWManage.aspx'
+
+        params = {
+            'PC': 'AA7F0DCDDFB3894C',
+            'PCID': '5725B7721D4680F3'
+        }
 
         print('redirect...')
         self._get(manage_url)
         self._get(auth_url)
-        response = self._get(show_url)
+        response = self._get(show_url, params=params)
         response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, 'html.parser')
         if soup.find('div', attrs={'id': 'RadWindowManager1'}) is not None:
@@ -163,7 +167,7 @@ if __name__ == '__main__':
     for i in range(1, table.nrows):
         reports.append(dict(zip(names, table.row_values(i))))
     if len(reports) > cfg.threshold:
-        reports = reports[:60]
+        reports = reports[:cfg.threshold]
 
     # run
     auto_reporter.run(reports)
