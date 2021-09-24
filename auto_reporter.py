@@ -28,13 +28,24 @@ REPORT_NAME_MAP = {
     'Speaker': 'txtBGR'
 }
 
+GRADE_ID_MAP = {
+    '2018': {
+        'PC': 'AA7F0DCDDFB3894C',
+        'PCID': '5725B7721D4680F3'
+    },
+    '2019': {
+        'PC': 'C90D842C5DDB9876',
+        'PCID': '8CF1421569A96C06'
+    }
+}
+
 
 def convert_to_form(names):
     return list(REPORT_NAME_MAP[name] for name in names)
 
 
 class AutoReporter(object):
-    def __init__(self, username, password,
+    def __init__(self, username, password, grade,
                  http_timeout=HTTP_TIMEOUT):
         self._session = requests.Session()
         # initialize customized `get` and `post` methods.
@@ -46,6 +57,7 @@ class AutoReporter(object):
                              timeout=http_timeout)
         self.username = username
         self.password = password
+        self.grade = grade
 
     def _login(self):
         login_url = 'https://ids.shanghaitech.edu.cn/authserver/login'
@@ -95,10 +107,7 @@ class AutoReporter(object):
                    'service=http://grad.shanghaitech.edu.cn/sso/'
         show_url = 'https://grad.shanghaitech.edu.cn/GraduateCultivate/WitMis_FBLWManage.aspx'
 
-        params = {
-            'PC': 'AA7F0DCDDFB3894C',
-            'PCID': '5725B7721D4680F3'
-        }
+        params = GRADE_ID_MAP[self.grade]
 
         print('redirect...')
         self._get(manage_url)
@@ -115,11 +124,7 @@ class AutoReporter(object):
     def submit_reports(self, reports):
         report_url = 'https://grad.shanghaitech.edu.cn/GraduateCultivate/WitMis_Fblw.aspx'
 
-        params = {
-            'Action': 'Add',
-            'PC': 'AA7F0DCDDFB3894C',
-            'PCID': '5725B7721D4680F3'
-        }
+        params = dict(Action='Add', **GRADE_ID_MAP[self.grade])
 
         response = self._get(report_url, params=params)
         response.encoding = 'utf-8'
@@ -150,7 +155,7 @@ class AutoReporter(object):
 
 
 def make_auto_reporter(cfg):
-    return AutoReporter(cfg.username, cfg.password)
+    return AutoReporter(cfg.username, cfg.password, cfg.grade)
 
 
 if __name__ == '__main__':
